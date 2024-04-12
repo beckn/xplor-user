@@ -1,0 +1,36 @@
+version: '3'
+services:
+  xplor_user_backend_service:
+    container_name: xplor-user-nest-backend
+    build: .
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT= ${PORT}
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - OTP_TTL=${OTP_TTL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+    ports:
+      - 1091:${PORT}
+    restart: always
+    networks:
+      - xplor-network
+
+  xplore_user_redis_service:
+    container_name: xplor-user-redis-service
+    image: redis
+    #ports:
+    #  - 6379:6379
+    networks:
+      - xplor-network
+    volumes:
+      - redis:/data
+
+volumes:
+  redis:
+
+networks:
+ xplor-network:
+    external: true
