@@ -1,73 +1,96 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# User-Service Microservice
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This microservice is built using NestJS and Docker. It provides functionality for managing users, roles, authentication, Twilio integration for SMS services, and cryptographic operations.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+## Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Authentication Module**: Handles user authentication and authorization.
+- **User Module**: Manages user data, including CRUD operations.
+- **Twilio Service**: Integration with Twilio for SMS services.
+- **Crypto Service**: Provides cryptographic operations for secure data handling.
 
-## Installation
+## Getting Started
 
-```bash
-$ npm install
-```
+### Prerequisites
 
-## Running the app
+- [Docker](https://www.docker.com/)
+- [Node.js](https://nodejs.org/) (if running outside Docker)
+- [NestJS CLI](https://nestjs.com/) (if running outside Docker)
 
-```bash
-# development
-$ npm run start
+### Installation
 
-# watch mode
-$ npm run start:dev
+1. Clone the repository:
 
-# production mode
-$ npm run start:prod
-```
+    ```bash
+    git clone https://github.com/your-username/user-service.git
+    cd user-service
+    ```
 
-## Test
+2. Install dependencies:
 
-```bash
-# unit tests
-$ npm run test
+    ```bash
+    npm install
+    ```
 
-# e2e tests
-$ npm run test:e2e
+### Configuration
 
-# test coverage
-$ npm run test:cov
-```
+1. Create a `.env` file based on the `.env.example` template.
 
-## Support
+2. Update the configuration variables in the `.env` file as needed.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Running the Microservice
 
-## Stay in touch
+#### Using Docker
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
 
-## License
+1. Run the Docker container:
 
-Nest is [MIT licensed](LICENSE).
+    ```bash
+    docker compose up --build
+    ```
+
+#### Locally (without Docker)
+
+1. Start the application:
+
+    ```bash
+    npm run start:dev
+    ```
+
+### Usage
+
+The microservice exposes various endpoints for managing users, roles, and authentication. Here are some common endpoints:
+
+- **User Endpoints**:
+  - `GET /api/v1/user/`: Get users.
+  - `POST /api/v1/user/create`: Create a new user.
+  - `POST /api/v1/user/kyc/`: Update a user's Kyc.
+  - `POST /api/v1/user/role`: Update a user's role.
+
+
+
+- **Authentication Endpoints**:
+  - `POST /api/v1/auth/send-otp`: Send Otp.
+  - `POST /api/v1/auth/resend-otp`: Resend Otp.
+   - `POST /api/v1/auth/verify-otp`: Verify Otp.
+
+[Postman documentation for reference](https://documenter.getpostman.com/view/32751383/2sA35LVz62)
+
+### Contributing
+
+Contributions are welcome! If you'd like to contribute to this microservice, please follow these steps:
+
+1. Fork the repository.
+2. Create your feature branch (`git checkout -b feature/new-feature`).
+3. Commit your changes (`git commit -am 'Add new feature'`).
+4. Push to the branch (`git push origin feature/new-feature`).
+5. Create a new Pull Request.
+
+### License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+Feel free to customize the README according to your specific project structure and requirements. You can add more detailed instructions, examples, or usage guidelines as needed.
