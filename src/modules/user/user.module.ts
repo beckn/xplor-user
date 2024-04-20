@@ -2,9 +2,10 @@
 
 // Importing necessary decorators and services from NestJS
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from './schemas';
 import { RoleModule } from '../role/role.module';
 

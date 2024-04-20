@@ -11,6 +11,13 @@ import { PhoneNumberGenerator } from '../../common/mocked/phone-number-generator
 
 import { MockKycResponse, MockRoleResponse } from '../../common/mocked/stubs/user.stub';
 import { faker } from '@faker-js/faker';
+import { HttpResponseMessage } from '../../common/enums/HttpResponseMessage';
+import {
+  EmailErrorMessage,
+  ErrorPhoneMessage,
+  ErrorUserMessage,
+  GeneralErrorMessage,
+} from '../../common/constant/user/dto-message';
 describe('UserController', () => {
   let controller: UserController;
   let userService: UserService;
@@ -67,8 +74,8 @@ describe('UserController', () => {
     });
     it('should return bad request if phoneNumber is empty', async () => {
       const mockBadRequest = {
-        message: ['Phone number should not be empty.'],
-        error: 'Bad Request',
+        message: [ErrorPhoneMessage.emptyPhoneNumber],
+        error: HttpResponseMessage.BAD_REQUEST,
         statusCode: 400,
       };
       jest.spyOn(userService, 'create').mockImplementationOnce(() => Promise.resolve(mockBadRequest as any));
@@ -79,8 +86,8 @@ describe('UserController', () => {
     it('should return bad request if country code is missing', async () => {
       const phoneNumber = new PhoneNumberGenerator('').generatePhoneNumber();
       const mockBadRequest = {
-        message: ['Please enter the country code'],
-        error: 'Bad Request',
+        message: [ErrorPhoneMessage.emptyCountryCode],
+        error: HttpResponseMessage.BAD_REQUEST,
         statusCode: 400,
       };
       jest.spyOn(userService, 'create').mockImplementationOnce(() => Promise.resolve(mockBadRequest as any));
@@ -90,8 +97,8 @@ describe('UserController', () => {
     it('should return bad request if country code is missing', async () => {
       const phoneNumber = new PhoneNumberGenerator('').generatePhoneNumber();
       const mockBadRequest = {
-        message: ['Please enter the country code'],
-        error: 'Bad Request',
+        message: [ErrorPhoneMessage.emptyCountryCode],
+        error: HttpResponseMessage.BAD_REQUEST,
         statusCode: 400,
       };
       jest.spyOn(userService, 'create').mockImplementationOnce(() => Promise.resolve(mockBadRequest as any));
@@ -118,8 +125,8 @@ describe('UserController', () => {
     it('should find a user with wrong id', async () => {
       const userId = `user_${uuidv4()}`;
       const mockUser = {
-        message: 'User Not Found',
-        error: 'Not Found',
+        message: ErrorUserMessage.notFound,
+        error: HttpResponseMessage.NOT_FOUND,
         statusCode: 404,
       };
 
@@ -143,6 +150,7 @@ describe('UserController', () => {
           id: faker.string.uuid(),
           name: faker.person.fullName(),
         },
+        walletId: faker.string.uuid(),
         _id: `kyc_${faker.string.uuid()}`, // Generate a random UUID
       };
       const mockResponse = new MockKycResponse(userId, phoneNumber, true, false, null, kycDetails);
@@ -161,11 +169,12 @@ describe('UserController', () => {
           id: faker.string.uuid(),
           name: faker.person.fullName(),
         },
+        walletId: faker.string.uuid(),
         _id: `role_${faker.string.uuid()}`, // Generate a random UUID
       };
       const mockResponse = {
-        message: ['email should not be empty.'],
-        error: 'Bad Request',
+        message: [EmailErrorMessage.notEmptyEmail],
+        error: HttpResponseMessage.BAD_REQUEST,
         statusCode: 400,
       };
       jest.spyOn(userService, 'updateUserKyc').mockResolvedValue(mockResponse as any);
@@ -183,11 +192,12 @@ describe('UserController', () => {
           id: faker.string.uuid(),
           name: faker.person.fullName(),
         },
+        walletId: faker.string.uuid(),
         _id: `role_${faker.string.uuid()}`, // Generate a random UUID
       };
       const mockResponse = {
-        message: ['email must be a valid email.'],
-        error: 'Bad Request',
+        message: [EmailErrorMessage.validEmail],
+        error: HttpResponseMessage.BAD_REQUEST,
         statusCode: 400,
       };
       jest.spyOn(userService, 'updateUserKyc').mockResolvedValue(mockResponse as any);
@@ -205,11 +215,12 @@ describe('UserController', () => {
           id: faker.string.uuid(),
           name: faker.person.fullName(),
         },
+        walletId: faker.string.uuid(),
         _id: `role_${faker.string.uuid()}`, // Generate a random UUID
       };
       const mockResponse = {
-        message: ['Gender must contain only letters'],
-        error: 'Bad Request',
+        message: [GeneralErrorMessage.validGender],
+        error: HttpResponseMessage.BAD_REQUEST,
         statusCode: 400,
       };
       jest.spyOn(userService, 'updateUserKyc').mockResolvedValue(mockResponse as any);
@@ -231,8 +242,8 @@ describe('UserController', () => {
       const userId = `user_${uuidv4()}`;
       const roleId = `roe_${uuidv4()}`;
       const mockResponse = {
-        message: 'Invalid roleId',
-        error: 'Bad Request',
+        message: GeneralErrorMessage.invalidRoleId,
+        error: HttpResponseMessage.BAD_REQUEST,
         statusCode: 400,
       };
       jest.spyOn(userService, 'updateUserRole').mockResolvedValue(mockResponse);
@@ -242,8 +253,8 @@ describe('UserController', () => {
       const userId = `user_${uuidv4()}`;
       const roleId = `roe_${uuidv4()}`;
       const mockResponse = {
-        message: ['roleId should not be empty'],
-        error: 'Bad Request',
+        message: [GeneralErrorMessage.emptyRoleId],
+        error: HttpResponseMessage.BAD_REQUEST,
         statusCode: 400,
       };
       jest.spyOn(userService, 'updateUserRole').mockResolvedValue(mockResponse);
@@ -259,7 +270,7 @@ describe('UserController', () => {
           kycVerified: false,
           roleAssigned: false,
         },
-        message: 'OK',
+        message: HttpResponseMessage.OK,
         success: true,
       };
       jest.spyOn(userService, 'getUserJourney').mockResolvedValue(mockedResponse);
@@ -268,8 +279,8 @@ describe('UserController', () => {
     it('should get a user journey with wrong userId', async () => {
       const userId = `user_${uuidv4()}`;
       const mockedResponse = {
-        message: 'User Not Found',
-        error: 'Not Found',
+        message: ErrorUserMessage.notFound,
+        error: HttpResponseMessage.NOT_FOUND,
         statusCode: 404,
       };
       jest.spyOn(userService, 'getUserJourney').mockResolvedValue(mockedResponse);

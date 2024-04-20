@@ -1,7 +1,7 @@
 // src/user/dto/create-kyc.dto.ts
 
 // Importing necessary decorators from class-validator and class-transformer
-import { IsNotEmpty, IsString, Matches, ValidateNested } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, Matches, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 // Importing the ProviderDto for nested validation
@@ -20,6 +20,14 @@ export class CreateKycDto {
   @IsNotEmpty()
   @IsString()
   address: string;
+
+  @IsNotEmpty()
+  @IsString()
+  email: string;
+
+  @IsOptional()
+  @IsString()
+  walletId: string;
 
   @Matches(/^[a-zA-Z]+$/, { message: 'Gender must contain only letters' })
   gender: string;

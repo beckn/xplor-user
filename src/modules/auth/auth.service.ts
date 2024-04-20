@@ -1,17 +1,20 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as argon from 'argon2';
+import { ConfigService } from '@nestjs/config';
+
 import { PhoneNumberDto, VerifyOtpDto } from './dto';
 import { generateOtp } from '../../util/generateOtp';
 import { getSuccessResponse } from '../../util/getSuccessResponse';
 import { HttpResponseMessage } from '../../common/enums/HttpResponseMessage';
 import { RedisService } from '../../service/redis/redis';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
 import { CryptoService } from '../../service/crypto/crypto';
 import { SignJwtDto } from './interface/signJwt.interface';
 import { ResendOtpDto } from './dto/resend-otp.dto';
 import { TwilioService } from '../../service/twilio/twilio';
 import { ErrorMessages } from '../../common/constant/error-message';
+import { CreateMPinDto } from './dto/create-mpin.dto';
 
 @Injectable()
 export class AuthService {
@@ -31,7 +34,7 @@ export class AuthService {
   async sendOtp(phoneNumberDto: PhoneNumberDto) {
     const env = this.configService.get('nodeEnv');
     const const_otp = this.configService.get('otp');
-    const key = this.cryptoService.encrypt(phoneNumberDto.phoneNumber);
+    const key = this.cryptoService.encrypt(phoneNumberDto.phoneNumber.replaceAll(' ', ''));
     if (env === 'test') {
       await this.redisService.setOtp(key, const_otp);
       return getSuccessResponse({ key: key, otp: const_otp }, HttpResponseMessage.OK);
@@ -39,7 +42,7 @@ export class AuthService {
       const otp = generateOtp();
 
       await this.redisService.setOtp(key, otp);
-      await this.twilioService.sendOtpMobile(phoneNumberDto.phoneNumber, otp);
+      await this.twilioService.sendOtpMobile(phoneNumberDto.phoneNumber.replaceAll(' ', ''), otp);
       return getSuccessResponse({ key: key }, HttpResponseMessage.OK);
     }
   }
@@ -84,7 +87,7 @@ export class AuthService {
       }
 
       if (retrievedOtp !== otp) {
-        throw new BadRequestException(ErrorMessages.OtpExpired);
+        throw new UnauthorizedException(ErrorMessages.OtpExpired);
       }
 
       // If OTP is correct, proceed with user verification
@@ -109,7 +112,7 @@ export class AuthService {
         return getSuccessResponse({ token: token, userId: createdUser._id }, HttpResponseMessage.OK);
       }
     } catch (error) {
-      return error?.response;
+      throw error?.response;
     }
   }
 
@@ -124,5 +127,72 @@ export class AuthService {
       secret: this.jwtSecret,
     });
     return `Bearer ${token}`;
+  }
+
+  /**
+   * Method to create a Master PIN (MPIN) for a user.
+   *
+   * This method is responsible for creating a new MPIN for a user. It first verifies if the user exists by
+   * calling the `findOne` method of the `userService` with the provided `userId`. If the user does not exist,
+   * it throws a `NotFoundException` indicating that the user was not found.
+   *
+   * If the user exists, the method proceeds to hash the provided MPIN using bcrypt with a salt rounds value
+   * retrieved from the configuration service. The hashed MPIN is then stored in the user's record in the
+   * database by calling the `update` method of the `userService`.
+   *
+   * @param createMPinDto - An object containing the MPIN to be created for the user. This is validated
+   * against the `CreateMPinDto` rules to ensure it is a 6-digit number.
+   * @param userId - The ID of the user for whom the MPIN is being created.
+   *
+   * @returns An object containing the updated user record with the new MPIN hash and a success message.
+   */
+  async createMPin(createMPinDto: CreateMPinDto, userId: string) {
+    // verify user exist or not by phone number
+    const user = await this.userService.findOne(userId);
+    if (!user) {
+      throw new NotFoundException(ErrorMessages.NotFound);
+    } else {
+      const mPinHash = await argon.hash(createMPinDto.mPin);
+      const updateUserMPin = await this.userService.update(userId, { mPin: mPinHash });
+      return { ...updateUserMPin, message: HttpResponseMessage.CREATED };
+    }
+  }
+
+  /**
+   * Method to verify a user's Master PIN (MPIN).
+   *
+   * This method is designed to verify the MPIN provided by a user. It first verifies if the user exists by
+   * calling the `findOne` method of the `userService` with the provided `userId`. If the user does not exist,
+   * it returns a response indicating that the verification failed.
+   *
+   * If the user exists, the method retrieves the hashed MPIN from the user's record in the database and
+   * compares it with the MPIN provided by the user using bcrypt's `compare` method. If the MPINs match,
+   * it returns a success response indicating that the verification passed. If the MPINs do not match,
+   * it returns a failure response indicating that the verification failed.
+   *
+   * @param verifyMPinDto - An object containing the MPIN to be verified for the user. This is validated
+   * against the `CreateMPinDto` rules to ensure it is a 6-digit number.
+   * @param userId - The ID of the user whose MPIN is being verified.
+   *
+   * @returns An object containing the verification result and a success or failure message.
+   */
+  async verifyMPin(verifyMPinDto: CreateMPinDto, userId: string) {
+    // verify user exist or not by phone number
+    try {
+      const user = await this.userService.findOne(userId);
+      if (!user) {
+        throw new NotFoundException(ErrorMessages.NotFound);
+      } else {
+        const hashedMPin = user?.data.mPin;
+        const result = await argon.verify(hashedMPin, verifyMPinDto.mPin);
+        if (result) {
+          return getSuccessResponse({ verified: result }, HttpResponseMessage.VERIFICATION_PASSED);
+        } else {
+          throw new UnauthorizedException(ErrorMessages.WrongMpin);
+        }
+      }
+    } catch (error) {
+      throw error;
+    }
   }
 }

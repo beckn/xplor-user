@@ -36,6 +36,9 @@ export class User extends Document {
   @Prop({ type: String, default: null })
   wallet: string;
 
+  @Prop({ type: String, default: null })
+  mPin: string;
+
   @Prop({ type: Date, default: Date.now })
   updated_at: Date;
 

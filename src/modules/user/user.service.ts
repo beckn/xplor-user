@@ -1,4 +1,5 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+/* eslint-disable no-console */
+import { BadRequestException, ConflictException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Error, Model } from 'mongoose';
 
@@ -12,16 +13,21 @@ import { HttpResponseMessage } from '../../common/enums/HttpResponseMessage';
 import { PhoneNumberDto } from '../auth/dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RoleService } from '../role/role.service';
+import { ErrorUserMessage } from '../../common/constant/user/dto-message';
+import { ErrorMessage } from '../../common/constant/role/service-message';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel('User') private UserModel: Model<User>, private roleService: RoleService) {}
+  private readonly logger: Logger;
+  constructor(@InjectModel('User') private UserModel: Model<User>, private roleService: RoleService) {
+    this.logger = new Logger(UserService.name);
+  }
 
   // Creates a new user with the provided phone number and sets the user as verified.
   async create(createUserDto: PhoneNumberDto): Promise<User> {
     try {
       return await this.UserModel.create({
-        phoneNumber: createUserDto.phoneNumber,
+        phoneNumber: createUserDto.phoneNumber.replaceAll(' ', ''),
         verified: true,
       });
     } catch (error) {
@@ -36,7 +42,7 @@ export class UserService {
       return await createdUser.save();
     } catch (error) {
       if (error.code === 11000) {
-        throw new ConflictException('User with this phone number already exists');
+        throw new ConflictException(ErrorUserMessage.userWithPhoneNumberAlreadyExists);
       }
 
       throw new Error(error);
@@ -114,11 +120,15 @@ export class UserService {
   // Updates a user's KYC (Know Your Customer) information.
   async updateUserKyc(id: string, createKycDto: CreateKycDto): Promise<User> {
     try {
+      // Logger to debug the update user kyc
+      this.logger.debug('updateUserKyc ======= ', createKycDto);
       const result = await this.UserModel.findOneAndUpdate(
         { _id: id },
-        { $set: { kyc: createKycDto, kycStatus: true } },
+        { $set: { kyc: createKycDto, kycStatus: true, wallet: createKycDto.walletId } },
         { new: true },
       );
+      // Logger to debug the result in updateUserKyc
+      this.logger.debug('result in updateUserKyc =======', result);
       return getSuccessResponse(result, HttpResponseMessage.OK);
     } catch (error) {
       throw new Error(error);
@@ -128,34 +138,73 @@ export class UserService {
   // Retrieves the user's journey, including KYC verification and role assignment status.
   async getUserJourney(id: string): Promise<any> {
     try {
-      const fields = ['kyc', 'role'];
+      const fields = ['kyc', 'role', 'mPin'];
       const pipeline = [
         { $match: { _id: id } }, // Match user by ID
         { $project: fields.reduce((acc, field) => ({ ...acc, [field]: 1 }), {}) }, // Project only specified fields
       ];
       const result = await this.UserModel.aggregate(pipeline);
       // Determine and return the user's journey status based on KYC and role assignment.
-      if (result[0]?.kyc && result[0]?.role)
+      if (result[0]?.kyc && result[0]?.role && result[0]?.mPin)
         return getSuccessResponse(
           {
             kycVerified: true,
             roleAssigned: true,
+            mPinCreated: true,
           },
           HttpResponseMessage.OK,
         );
-      else if (result[0]?.kyc && !result[0]?.role)
+      else if (result[0]?.kyc && !result[0]?.role && !result[0]?.mPin)
         return getSuccessResponse(
           {
             kycVerified: true,
             roleAssigned: false,
+            mPinCreated: false,
           },
           HttpResponseMessage.OK,
         );
-      else if (!result[0]?.kyc && result[0]?.role)
+      else if (!result[0]?.kyc && result[0]?.role && !result[0]?.mPin)
         return getSuccessResponse(
           {
             kycVerified: false,
             roleAssigned: true,
+            mPinCreated: false,
+          },
+          HttpResponseMessage.OK,
+        );
+      else if (!result[0]?.kyc && !result[0]?.role && result[0]?.mPin)
+        return getSuccessResponse(
+          {
+            kycVerified: false,
+            roleAssigned: false,
+            mPinCreated: true,
+          },
+          HttpResponseMessage.OK,
+        );
+      else if (!result[0]?.kyc && !result[0]?.role && !result[0]?.mPin)
+        return getSuccessResponse(
+          {
+            kycVerified: false,
+            roleAssigned: false,
+            mPinCreated: false,
+          },
+          HttpResponseMessage.OK,
+        );
+      else if (result[0]?.kyc && result[0]?.role && !result[0]?.mPin)
+        return getSuccessResponse(
+          {
+            kycVerified: true,
+            roleAssigned: true,
+            mPinCreated: false,
+          },
+          HttpResponseMessage.OK,
+        );
+      else if (!result[0]?.kyc && result[0]?.role && result[0]?.mPin)
+        return getSuccessResponse(
+          {
+            kycVerified: false,
+            roleAssigned: true,
+            mPinCreated: true,
           },
           HttpResponseMessage.OK,
         );
@@ -164,6 +213,7 @@ export class UserService {
           {
             kycVerified: false,
             roleAssigned: false,
+            mPinCreated: false,
           },
           HttpResponseMessage.OK,
         );
@@ -175,7 +225,7 @@ export class UserService {
   // Updates a user's role based on the provided role ID.
   async updateUserRole(userId: string, createRoleDto: CreateRoleDto): Promise<any> {
     const role = await this.roleService.findOne(createRoleDto.roleId);
-    if (role.data === null) throw new BadRequestException('Invalid roleId');
+    if (role.data === null) throw new BadRequestException(ErrorMessage.inValidRole);
     const result = await this.UserModel.findByIdAndUpdate(
       { _id: userId },
       {

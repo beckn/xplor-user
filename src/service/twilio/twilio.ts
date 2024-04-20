@@ -4,6 +4,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Twilio } from 'twilio';
 import { ConfigService } from '@nestjs/config';
+
 import { SmsMessages } from '../../common/constant/service/twilio-message';
 
 // Defining the TwilioService, which is responsible for sending OTPs via Twilio
@@ -14,8 +15,8 @@ export class TwilioService {
   private configService: ConfigService;
   constructor() {
     this.configService = new ConfigService();
-    const accountSid = this.configService.get('TWILIO_ACCOUNT_SID');
-    const authToken = this.configService.get('TWILIO_AUTH_TOKEN');
+    const accountSid = this.configService.get('TWILIO_ACCOUNT_SID').replaceAll(' ', '');
+    const authToken = this.configService.get('TWILIO_AUTH_TOKEN').replaceAll(' ', '');
 
     this.twilioClient = new Twilio(accountSid, authToken);
   }

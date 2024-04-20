@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+
 import { VerifyOtpValidationMessages } from '../../../common/constant/auth/verify-otp-message';
 
 // DTO for verifying an OTP.

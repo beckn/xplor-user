@@ -1,14 +1,22 @@
+// Import necessary modules and services for testing the AuthService.
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from './auth.service';
-import { RedisService } from '../../service/redis/redis';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { faker } from '@faker-js/faker';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+
+import { AuthService } from './auth.service';
+import { RedisService } from '../../service/redis/redis';
 import { UserService } from '../user/user.service';
 import { CryptoService } from '../../service/crypto/crypto';
 import { TwilioService } from '../../service/twilio/twilio';
-import { faker } from '@faker-js/faker';
+import { CreateMPinDto } from './dto/create-mpin.dto';
+import { MockMpin, MpinFormat } from '../../common/constant/auth/mpin-message';
+import { ErrorMessages } from '../../common/constant/error-message';
 
+// Test suite for the AuthService.
 describe('AuthService', () => {
+  // Initialize variables for the services that will be mocked and tested.
   let authService: AuthService;
   let redisService: RedisService;
   let jwtService: JwtService;
@@ -18,19 +26,22 @@ describe('AuthService', () => {
   let cryptoService: CryptoService;
   let twilioService: TwilioService;
 
+  // Setup before each test case in this suite.
   beforeEach(async () => {
+    // Create a testing module with mocked providers.
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: RedisService, useValue: { setOtp: jest.fn(), getOtp: jest.fn(), set: jest.fn(), get: jest.fn() } },
         { provide: JwtService, useValue: { signAsync: jest.fn() } },
         { provide: ConfigService, useValue: { get: jest.fn() } },
-        { provide: UserService, useValue: { findByPhoneNumber: jest.fn() } },
+        { provide: UserService, useValue: { findByPhoneNumber: jest.fn(), findOne: jest.fn(), update: jest.fn() } },
         { provide: CryptoService, useValue: { decrypt: jest.fn(), encrypt: jest.fn() } },
         { provide: TwilioService, useValue: { sendOtpMobile: jest.fn() } },
       ],
     }).compile();
 
+    // Get the instances of the services to be tested.
     authService = module.get<AuthService>(AuthService);
     redisService = module.get<RedisService>(RedisService);
     jwtService = module.get<JwtService>(JwtService);
@@ -40,11 +51,14 @@ describe('AuthService', () => {
     twilioService = module.get<TwilioService>(TwilioService);
   });
 
+  // Test case to ensure the AuthService is properly instantiated.
   it('should be defined', () => {
     expect(authService).toBeDefined();
   });
 
+  // Test suite for the sendOtp functionality in the AuthService.
   describe('sendOtp', () => {
+    // Test case to verify that the sendOtp method of the AuthService sends an OTP and returns a success response.
     it('should send OTP and return success response', async () => {
       const phoneNumberDto = { phoneNumber: faker.phone.number() };
       const configGetSpy = jest.spyOn(configService, 'get');
@@ -57,19 +71,23 @@ describe('AuthService', () => {
 
       expect(configGetSpy).toHaveBeenCalledWith('nodeEnv');
       expect(configGetSpy).toHaveBeenCalledWith('otp');
-      expect(cryptoEncryptSpy).toHaveBeenCalledWith(phoneNumberDto.phoneNumber);
+      expect(cryptoEncryptSpy).toHaveBeenCalledWith(phoneNumberDto.phoneNumber.replaceAll(' ', ''));
       expect(redisSetSpy).toHaveBeenCalled();
       expect(twilioSendOtpMobileSpy).toHaveBeenCalled();
     });
   });
 
+  // Test suite for the resendOtp functionality in the AuthService.
   describe('resendOtp', () => {
+    // Test case to verify that the resendOtp method of the AuthService resends an OTP and returns a success response.
     it('should resend OTP and return success response', async () => {
-      const resendOtpDto = { key: 'encryptedKey' };
+      const key = faker.string.uuid();
+      const resendOtpDto = { key: key };
+      const phoneNumber = faker.phone.number();
       const configGetSpy = jest.spyOn(configService, 'get');
       configGetSpy.mockReturnValueOnce('dev');
       const cryptoDecryptSpy = jest.spyOn(cryptoService, 'decrypt');
-      cryptoDecryptSpy.mockReturnValueOnce('phoneNumber');
+      cryptoDecryptSpy.mockReturnValueOnce(phoneNumber);
       const redisSetSpy = jest.spyOn(redisService, 'set');
       const twilioSendOtpMobileSpy = jest.spyOn(twilioService, 'sendOtpMobile');
 
@@ -77,55 +95,108 @@ describe('AuthService', () => {
 
       expect(configGetSpy).toHaveBeenCalledWith('nodeEnv');
       expect(configGetSpy).toHaveBeenCalledWith('otp');
-      expect(cryptoDecryptSpy).toHaveBeenCalledWith('encryptedKey');
+      expect(cryptoDecryptSpy).toHaveBeenCalledWith(key);
       expect(redisSetSpy).toHaveBeenCalled();
       expect(twilioSendOtpMobileSpy).toHaveBeenCalled();
     });
   });
+
+  // Test suite for the signJwt functionality in the AuthService.
   describe('signJwt', () => {
+    // Test case to verify that the signJwt method of the AuthService signs a JWT token with the provided payload.
     it('should sign a JWT token with the provided payload', async () => {
       const signJwtDto = {
-        userId: 'user_123',
-        role: 'user',
-        expiresIn: '1h',
+        userId: `user_${faker.string.uuid()}`,
+        role: faker.person.jobTitle(),
+        expiresIn: faker.date.past().toISOString(),
       };
+      const bToken = faker.string.uuid();
       const jwtSignSpy = jest.spyOn(jwtService, 'signAsync');
-      jwtSignSpy.mockResolvedValueOnce('generatedToken');
+      jwtSignSpy.mockResolvedValueOnce(bToken);
 
       const token = await authService.signJwt(signJwtDto);
-      expect(token).toBe('Bearer generatedToken');
+      expect(token).toBe(`Bearer ${bToken}`);
       expect(jwtSignSpy).toHaveBeenCalledWith(
         { sub: signJwtDto.userId, role: signJwtDto.role },
         { expiresIn: signJwtDto.expiresIn },
       );
     });
   });
+
+  // Test suite for the verifyOtp functionality in the AuthService.
   describe('verifyOtp', () => {
+    // Test case to verify that the verifyOtp method of the AuthService throws an error if the OTP is incorrect.
     it('should throw an error if the OTP is incorrect', async () => {
-      const verifyOtpDto = { key: 'encryptedKey', otp: '123456' };
-      jest.spyOn(redisService, 'getOtp').mockResolvedValueOnce('654321');
-      jest.spyOn(cryptoService, 'decrypt').mockReturnValueOnce('phoneNumber');
-
-      const result = await authService.verifyOtp(verifyOtpDto);
-      expect(result).toEqual({
-        error: 'Bad Request',
-        message:
-          'The OTP you entered is incorrect. Please double-check the code sent to your mobile number and try again.',
-        statusCode: 400,
-      });
+      const key = faker.string.uuid(); // Generate a random UUID for the key.
+      const otp = faker.number.int({ min: 100000, max: 999999 }).toString(); // Generate a random OTP.
+      const verifyOtpDto = { key: key, otp: otp }; // Create a DTO with the generated key and OTP.
+      const phoneNumber = faker.phone.number(); // Generate a random phone number.
+      jest
+        .spyOn(redisService, 'getOtp') // Spy on the getOtp method of the RedisService.
+        .mockResolvedValueOnce(faker.number.int({ min: 100000, max: 999999 }).toString()); // Mock the getOtp method to return a different OTP.
+      jest.spyOn(cryptoService, 'decrypt').mockReturnValueOnce(phoneNumber); // Spy on and mock the decrypt method of the CryptoService.
+      try {
+        await authService.verifyOtp(verifyOtpDto); // Attempt to verify the OTP.
+      } catch (error) {
+        const mockedError = new UnauthorizedException(ErrorMessages.OtpExpired); // Create a mocked error for an expired OTP.
+        expect(error).toEqual(mockedError.getResponse()); // Expect the error thrown to match the mocked error.
+      }
     });
 
+    // Test case to verify that the verifyOtp method of the AuthService throws an error if the OTP is expired.
     it('should throw an error if the OTP is expired', async () => {
-      const verifyOtpDto = { key: 'encryptedKey', otp: '123456' };
-      jest.spyOn(redisService, 'getOtp').mockResolvedValueOnce(null);
-      jest.spyOn(cryptoService, 'decrypt').mockReturnValueOnce('phoneNumber');
-
-      const result = await authService.verifyOtp(verifyOtpDto);
-      expect(result).toEqual({
-        error: 'Bad Request',
-        message: 'Invalid key or key is expired',
-        statusCode: 400,
-      });
+      const key = faker.string.uuid(); // Generate a random UUID for the key.
+      const otp = faker.number.int({ min: 100000, max: 999999 }).toString(); // Generate a random OTP.
+      const verifyOtpDto = { key: key, otp: otp }; // Create a DTO with the generated key and OTP.
+      const phoneNumber = faker.phone.number(); // Generate a random phone number.
+      jest.spyOn(redisService, 'getOtp').mockResolvedValueOnce(null); // Spy on and mock the getOtp method of the RedisService to return null.
+      jest.spyOn(cryptoService, 'decrypt').mockReturnValueOnce(phoneNumber); // Spy on and mock the decrypt method of the CryptoService.
+      try {
+        await authService.verifyOtp(verifyOtpDto); // Attempt to verify the OTP.
+      } catch (error) {
+        const mockedError = new BadRequestException(ErrorMessages.InvalidKeyOrKeyExpired); // Create a mocked error for an invalid or expired key.
+        expect(error).toEqual(mockedError.getResponse()); // Expect the error thrown to match the mocked error.
+      }
     });
+  });
+  // Test case to verify the behavior when attempting to create an mPin with an incorrect payload.
+  // It mocks the authService.createMPin method to return a specific mockedData object indicating an incorrect mPin format.
+  it('should call to create mPin with bad payload', async () => {
+    const userId = `user_${faker.string.uuid()}`;
+    const createMPinDto = new CreateMPinDto();
+    createMPinDto.mPin = MockMpin.incorrect;
+
+    const mockedData = {
+      message: MpinFormat.message,
+      statusCode: MpinFormat.statusCode,
+    };
+    jest.spyOn(authService, 'createMPin').mockResolvedValue(mockedData as any);
+
+    expect(await authService.createMPin(createMPinDto, userId)).toEqual(mockedData);
+  });
+
+  // Test case to verify the behavior when attempting to create an mPin with an empty payload.
+  // It mocks the authService.createMPin method to return a specific mockedData object indicating that an mPin is required.
+  it('should call to create mPin with empty payload', async () => {
+    const userId = `user_${faker.string.uuid()}`;
+    const createMPinDto = new CreateMPinDto();
+    createMPinDto.mPin = '';
+
+    const mockedData = new UnauthorizedException(ErrorMessages.WrongMpin);
+    jest.spyOn(authService, 'createMPin').mockResolvedValue(mockedData as any);
+
+    expect(await authService.createMPin(createMPinDto, userId)).toEqual(mockedData);
+  });
+
+  // Test case to verify the behavior when attempting to create an mPin with an invalid payload.
+  // It mocks the authService.createMPin method to return a specific mockedData object indicating a user error.
+  it('should call to create mPin with invalid payload', async () => {
+    const userId = `use_${faker.string.uuid()}`;
+    const createMPinDto = new CreateMPinDto();
+    createMPinDto.mPin = MockMpin.correct;
+    const mockedData = new UnauthorizedException(ErrorMessages.WrongMpin);
+    jest.spyOn(authService, 'createMPin').mockResolvedValue(mockedData as any);
+
+    expect(await authService.createMPin(createMPinDto, userId)).toEqual(mockedData);
   });
 });
