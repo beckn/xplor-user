@@ -4,12 +4,15 @@ import { getModelToken } from '@nestjs/mongoose';
 import { User } from './schemas';
 import { Model } from 'mongoose';
 import { faker } from '@faker-js/faker';
+import { v4 as uuidv4 } from 'uuid';
 
 import { MockKycResponse, NewUser } from '../../common/mocked/stubs/user.stub';
-import { v4 as uuidv4 } from 'uuid';
+
 import { PhoneNumberGenerator } from '../../common/mocked/phone-number-generator.stub';
 import { RoleService } from '../role/role.service';
 import { Role } from '../role/schema/role.schema';
+import { HttpResponseMessage } from '../../common/enums/HttpResponseMessage';
+import { ErrorPhoneMessage } from '../../common/constant/user/dto-message';
 
 describe('UserService', () => {
   let service: UserService;
@@ -62,7 +65,7 @@ describe('UserService', () => {
     });
     it('should return bad request if phoneNumber is empty', async () => {
       const mockBadRequest = {
-        message: ['Phone number should not be empty.'],
+        message: [ErrorPhoneMessage.emptyPhoneNumber],
         error: 'Bad Request',
         statusCode: 400,
       };
@@ -74,8 +77,8 @@ describe('UserService', () => {
     it('should return bad request if country code is missing', async () => {
       const phoneNumber = new PhoneNumberGenerator('').generatePhoneNumber();
       const mockBadRequest = {
-        message: ['Please enter the country code'],
-        error: 'Bad Request',
+        message: [ErrorPhoneMessage.emptyCountryCode],
+        error: HttpResponseMessage.BAD_REQUEST,
         statusCode: 400,
       };
       jest.spyOn(userModel, 'create').mockImplementationOnce(() => Promise.resolve(mockBadRequest as any));
@@ -98,6 +101,7 @@ describe('UserService', () => {
           id: faker.string.uuid(),
           name: faker.person.fullName(),
         },
+        walletId: faker.string.uuid(),
         _id: `kyc_${faker.string.uuid()}`, // Generate a random UUID
       };
       const createKycResponse = new MockKycResponse(userId, phoneNumber, true, false, null, kycDetails);
@@ -115,8 +119,9 @@ describe('UserService', () => {
         data: {
           kycVerified: false,
           roleAssigned: false,
+          mPinCreated: false,
         },
-        message: 'OK',
+        message: HttpResponseMessage.OK,
         success: true,
       };
       jest.spyOn(userModel, 'aggregate').mockResolvedValue([mockedResult] as any);

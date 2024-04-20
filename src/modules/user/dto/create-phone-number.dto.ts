@@ -1,7 +1,6 @@
-// src/user/dto/create-phone-number.dto.ts
-
 // Importing the Validate decorator from class-validator
 import { Validate } from 'class-validator';
+
 // src/user/dto/create-phone-number.dto.ts
 import { CustomPhoneValidator } from '../../../common/decorator/custom-phone-validator-dto';
 import { PhoneNumberDtoMessage } from '../../../common/constant/user/dto-message';

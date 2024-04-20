@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString } from 'class-validator';
+
 import { KeyValidationMessages } from '../../../common/constant/auth/resend-otp-message';
 
 // DTO for resending an OTP.

@@ -1,4 +1,5 @@
 import { Validate } from 'class-validator';
+
 import { CustomPhoneValidator } from '../../../common/decorator/custom-phone-validator-dto';
 
 // DTO for handling phone number input.

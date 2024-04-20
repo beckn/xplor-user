@@ -1,5 +1,9 @@
-import { CustomPhoneValidator } from '../custom-phone-validator-dto';
 import { ValidationArguments } from 'class-validator';
+import { faker } from '@faker-js/faker';
+
+import { ErrorPhoneMessage } from '../../constant/user/dto-message';
+import { CustomPhoneValidator } from '../custom-phone-validator-dto';
+import { PhoneNumberGenerator } from '../../mocked/phone-number-generator.stub';
 
 describe('CustomPhoneValidator', () => {
   let validator: CustomPhoneValidator;
@@ -19,27 +23,29 @@ describe('CustomPhoneValidator', () => {
   });
 
   it('should return true for a valid phone number', () => {
-    const args = { value: '+919934567890' } as ValidationArguments; // Replace with a valid phone number format for your test case
-    expect(validator.validate('+919934567890', args)).toBe(true);
+    const phoneNumber = new PhoneNumberGenerator('IN').generatePhoneNumber();
+    const args = { value: phoneNumber } as ValidationArguments; // Replace with a valid phone number format for your test case
+    expect(validator.validate(phoneNumber, args)).toBe(true);
   });
 
   it('should return false for an invalid phone number', () => {
-    const args = { value: 'invalid' } as ValidationArguments;
-    expect(validator.validate('invalid', args)).toBe(false);
+    const invalid = faker.lorem.word();
+    const args = { value: invalid } as ValidationArguments;
+    expect(validator.validate(invalid, args)).toBe(false);
   });
 
   it('should provide a message for missing phone number key', () => {
     const args = { value: undefined } as ValidationArguments;
-    expect(validator.defaultMessage(args)).toBe('PhoneNumber key must be present');
+    expect(validator.defaultMessage(args)).toBe(ErrorPhoneMessage.mustHavePhoneNumberKey);
   });
 
   it('should provide a message for empty phone number', () => {
     const args = { value: '' } as ValidationArguments;
-    expect(validator.defaultMessage(args)).toBe('Phone number should not be empty.');
+    expect(validator.defaultMessage(args)).toBe(ErrorPhoneMessage.emptyPhoneNumber);
   });
 
   it('should provide a message for missing country code', () => {
-    const args = { value: '1234567890' } as ValidationArguments; // Assuming a valid number but without country code
-    expect(validator.defaultMessage(args)).toBe('Oops! It seems like the number you entered is invalid.');
+    const args = { value: faker.number.int({ min: 100000, max: 999999 }) } as ValidationArguments; // Assuming a valid number but without country code
+    expect(validator.defaultMessage(args)).toBe(ErrorPhoneMessage.invalidPhoneNumber);
   });
 });

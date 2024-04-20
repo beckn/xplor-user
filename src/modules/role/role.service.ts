@@ -6,7 +6,6 @@ import { Model } from 'mongoose';
 
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
-
 import { Role } from './schema/role.schema';
 import { getSuccessResponse } from '../../util/getSuccessResponse';
 import { HttpResponseMessage } from '../../common/enums/HttpResponseMessage';

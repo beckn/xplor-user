@@ -1,4 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getModelToken } from '@nestjs/mongoose';
+import { faker } from '@faker-js/faker';
+
 import { RoleController } from './role.controller';
 import { RoleService } from './role.service';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -6,8 +9,6 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { getSuccessResponse } from '../../util/getSuccessResponse';
 import { HttpResponseMessage } from '../../common/enums/HttpResponseMessage';
 import { Role } from './schema/role.schema';
-import { getModelToken } from '@nestjs/mongoose';
-import { faker } from '@faker-js/faker';
 
 describe('RoleController', () => {
   let controller: RoleController;

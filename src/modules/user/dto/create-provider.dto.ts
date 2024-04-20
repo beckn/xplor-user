@@ -1,4 +1,3 @@
-// src/user/dto/create-provider.dto.ts
 import { IsNotEmpty, IsString } from 'class-validator';
 
 // DTO for creating a new provider, which includes id and name fields

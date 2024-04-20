@@ -1,5 +1,6 @@
-import { ValidateOne } from '../validate-one.dto';
 import { validate, IsNotEmpty } from 'class-validator';
+
+import { ValidateOne } from '../validate-one.dto';
 
 class TestClass {
   @ValidateOne({ message: 'Invalid input.' })

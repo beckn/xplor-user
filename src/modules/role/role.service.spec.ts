@@ -10,6 +10,7 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { Role } from './schema/role.schema';
 import { faker } from '@faker-js/faker';
+import { ErrorMessage } from '../../common/constant/role/service-message';
 
 describe('RoleService', () => {
   let service: RoleService;
@@ -61,7 +62,7 @@ describe('RoleService', () => {
         description: faker.person.jobDescriptor(),
         imageUrl: faker.image.avatar(),
       };
-      const errorMessage = 'Role creation failed';
+      const errorMessage = ErrorMessage.failedToCreate;
       jest.spyOn(roleModel, 'create').mockRejectedValueOnce(new Error(errorMessage));
 
       await expect(service.create(createRoleDto)).rejects.toThrowError(errorMessage);
@@ -118,7 +119,7 @@ describe('RoleService', () => {
       try {
         await service.findOne(roleId);
       } catch (error) {
-        expect(error.message).toBe('Role not found');
+        expect(error.message).toBe(ErrorMessage.NotFound);
       }
     });
   });
@@ -151,12 +152,12 @@ describe('RoleService', () => {
         description: faker.person.jobDescriptor(),
         imageUrl: faker.image.avatar(),
       };
-      jest.spyOn(roleModel, 'findByIdAndUpdate').mockRejectedValueOnce(new Error('Role update failed'));
+      jest.spyOn(roleModel, 'findByIdAndUpdate').mockRejectedValueOnce(new Error(ErrorMessage.failedToUpdate));
 
       try {
         await service.update(roleId, updateRoleDto);
       } catch (error) {
-        expect(error.message).toBe('Role update failed');
+        expect(error.message).toBe(ErrorMessage.failedToUpdate);
       }
     });
   });
@@ -173,12 +174,12 @@ describe('RoleService', () => {
 
     it('should handle error if role deletion fails', async () => {
       const roleId = `role_${uuidv4()}`;
-      jest.spyOn(roleModel, 'findByIdAndDelete').mockRejectedValueOnce(new Error('Role deletion failed'));
+      jest.spyOn(roleModel, 'findByIdAndDelete').mockRejectedValueOnce(new Error(ErrorMessage.failedToDelete));
 
       try {
         await service.remove(roleId);
       } catch (error) {
-        expect(error.message).toBe('Role deletion failed');
+        expect(error.message).toBe(ErrorMessage.failedToDelete);
       }
     });
   });

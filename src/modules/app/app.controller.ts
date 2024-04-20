@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+
 import { AppService } from './app.service';
 import { IHealthCheckResponse } from '../../common/interfaces/server-health-response';
 import { Public } from '../../common/decorator/public.decorator';

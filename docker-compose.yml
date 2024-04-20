@@ -28,11 +28,11 @@ services:
     #  - 6379:6379
     networks:
       - xplor-network
-    volumes:
-      - redis:/data
+    # volumes:
+    #   - redis:/data
 
-volumes:
-  redis:
+# volumes:
+#   redis:
 
 networks:
  xplor-network:

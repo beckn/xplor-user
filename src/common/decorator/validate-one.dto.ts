@@ -1,4 +1,5 @@
 import { registerDecorator, ValidationOptions, ValidationArguments, isString, isEmail } from 'class-validator';
+
 import { ValidateOneMessage } from '../constant/validate-one-message';
 
 // Custom decorator to validate that at least one of the properties is valid.

@@ -1,5 +1,3 @@
-// src/user/dto/user-id.dto.ts
-
 // Importing necessary decorators from class-validator
 import { IsNotEmpty, IsString } from 'class-validator';
 
