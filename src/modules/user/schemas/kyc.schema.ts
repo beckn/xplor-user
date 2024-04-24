@@ -26,6 +26,9 @@ export class Kyc extends Document {
   @Prop({ required: true })
   email: string;
 
+  @Prop({ required: false })
+  dob: string;
+
   @Prop({ required: true })
   gender: string;
 

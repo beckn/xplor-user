@@ -29,6 +29,10 @@ export class CreateKycDto {
   @IsString()
   walletId: string;
 
+  @IsOptional()
+  @IsString()
+  dob: string;
+
   @Matches(/^[a-zA-Z]+$/, { message: 'Gender must contain only letters' })
   gender: string;
 

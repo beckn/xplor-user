@@ -46,6 +46,6 @@ describe('CustomPhoneValidator', () => {
 
   it('should provide a message for missing country code', () => {
     const args = { value: faker.number.int({ min: 100000, max: 999999 }) } as ValidationArguments; // Assuming a valid number but without country code
-    expect(validator.defaultMessage(args)).toBe(ErrorPhoneMessage.invalidPhoneNumber);
+    expect(validator.defaultMessage(args)).toBe(ErrorPhoneMessage.invalidCountryCode);
   });
 });
