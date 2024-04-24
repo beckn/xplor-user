@@ -150,6 +150,7 @@ describe('UserController', () => {
           id: faker.string.uuid(),
           name: faker.person.fullName(),
         },
+        dob: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }).toString(),
         walletId: faker.string.uuid(),
         _id: `kyc_${faker.string.uuid()}`, // Generate a random UUID
       };
@@ -169,6 +170,7 @@ describe('UserController', () => {
           id: faker.string.uuid(),
           name: faker.person.fullName(),
         },
+        dob: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }).toString(),
         walletId: faker.string.uuid(),
         _id: `role_${faker.string.uuid()}`, // Generate a random UUID
       };
@@ -192,6 +194,7 @@ describe('UserController', () => {
           id: faker.string.uuid(),
           name: faker.person.fullName(),
         },
+        dob: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }).toString(),
         walletId: faker.string.uuid(),
         _id: `role_${faker.string.uuid()}`, // Generate a random UUID
       };
@@ -210,6 +213,7 @@ describe('UserController', () => {
         firstName: faker.person.firstName(),
         address: faker.location.streetAddress(),
         email: faker.internet.email(),
+        dob: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }).toString(),
         gender: faker.number.int().toString(), // Randomly select 'Male' or 'Female' gender
         provider: {
           id: faker.string.uuid(),

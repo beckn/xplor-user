@@ -97,6 +97,7 @@ describe('UserService', () => {
         address: faker.location.streetAddress(),
         email: faker.internet.email(),
         gender: faker.person.gender(), // Randomly select 'Male' or 'Female' gender
+        dob: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }).toString(),
         provider: {
           id: faker.string.uuid(),
           name: faker.person.fullName(),

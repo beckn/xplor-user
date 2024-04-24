@@ -10,7 +10,7 @@ export class CustomPhoneValidator implements ValidatorConstraintInterface {
   validate(value: any, args: ValidationArguments) {
     try {
       if (args && args.value !== undefined) {
-        if (args.value.length > 16 || (args.value.length > 6 && args.value.includes('+'))) {
+        if (args.value.length < 16 && args.value.length > 6 && args.value.includes('+')) {
           args.value.includes('+');
           return true;
         } else {
@@ -29,10 +29,10 @@ export class CustomPhoneValidator implements ValidatorConstraintInterface {
     } else {
       if (args.value === '') {
         return PhoneValidatorErrorMessages.IsEmptyErrorMessage;
-      } else if (!/^-\d+$/.test(args.value) && !/^\+\d+/.test(args.value)) {
-        return PhoneValidatorErrorMessages.IsInvalidPhoneNumberErrorMessage;
       } else if (!/\+/.test(args.value)) {
         return PhoneValidatorErrorMessages.IsCountryCodePresentErrorMessage;
+      } else if (!/^-\d+$/.test(args.value) && !/^\+\d+/.test(args.value)) {
+        return PhoneValidatorErrorMessages.IsInvalidPhoneNumberErrorMessage;
       } else {
         return PhoneValidatorErrorMessages.IsInvalidPhoneNumberErrorMessage;
       }
