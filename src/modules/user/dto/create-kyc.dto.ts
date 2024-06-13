@@ -23,10 +23,6 @@ export class CreateKycDto {
 
   @IsOptional()
   @IsString()
-  dob: string;
-
-  @IsOptional()
-  @IsString()
   email: string;
 
   @IsOptional()
