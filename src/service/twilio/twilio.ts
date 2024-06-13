@@ -1,7 +1,7 @@
 // src/service/twilio/twilio.service.ts
 
 // Importing necessary decorators, services, and utilities from NestJS and Twilio
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { Twilio } from 'twilio';
 import { ConfigService } from '@nestjs/config';
 
@@ -10,6 +10,7 @@ import { SmsMessages } from '../../common/constant/service/twilio-message';
 // Defining the TwilioService, which is responsible for sending OTPs via Twilio
 @Injectable()
 export class TwilioService {
+  private readonly logger: Logger = new Logger(TwilioService.name);
   // Initializing the Twilio client with credentials from the ConfigService
   private twilioClient: Twilio;
   private configService: ConfigService;
@@ -38,6 +39,7 @@ export class TwilioService {
       // Returning the response from Twilio
       return { msg: response };
     } catch (error) {
+      this.logger.error(error);
       // Handling specific errors if needed
       if (error.code === 21211) {
         throw new BadRequestException(SmsMessages.OtpSendFailedInvalidPhoneNumber);

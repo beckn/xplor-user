@@ -23,6 +23,6 @@ export const ErrorMessage = {
   failedToDelete: 'Failed to delete role',
   failedToUpdate: 'Failed to update role',
   failedToCreate: 'Failed to create role',
-  NotFound: 'Role not found',
+  UserNotFound: 'Role not found',
   inValidRole: 'Invalid role',
 };

@@ -1,6 +1,10 @@
 version: '3'
 services:
   xplor_user_backend_service:
+    logging:
+      driver: "file-log-driver"
+      options:
+        fpath: "/docker/xplor_user_backend_service.log"
     container_name: xplor-user-nest-backend
     build: .
     depends_on:
@@ -11,9 +15,18 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
+      - DEFAULT_OTP=${DEFAULT_OTP}
       - OTP_TTL=${OTP_TTL}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - DEFAULT_TTL=${DEFAULT_TTL}
+      - JWT_ACCESS_TOKEN_SECRET=${JWT_ACCESS_TOKEN_SECRET}
+      - JWT_ACCESS_TOKEN_EXPIRES_IN=${JWT_ACCESS_TOKEN_EXPIRES_IN}
+      - JWT_REFRESH_TOKEN_SECRET=${JWT_REFRESH_TOKEN_SECRET}
+      - JWT_REFRESH_TOKEN_SECRET_EXPIRES_IN=${JWT_REFRESH_TOKEN_SECRET_EXPIRES_IN}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_SENDER_PHONE_NUMBER=${TWILIO_SENDER_PHONE_NUMBER}
+      - GRAFANA_SERVICE_URL=${GRAFANA_SERVICE_URL}
+      - REGIONAL_LANGUAGE_ACCESS_COUNT=${REGIONAL_LANGUAGE_ACCESS_COUNT}
     ports:
       - 1091:${PORT}
     restart: always
@@ -21,6 +34,10 @@ services:
       - xplor-network
 
   xplore_user_redis_service:
+    logging:
+      driver: "file-log-driver"
+      options:
+        fpath: "/docker/xplore_user_redis_service.log"
     container_name: xplor-user-redis-service
     image: redis
     restart: always

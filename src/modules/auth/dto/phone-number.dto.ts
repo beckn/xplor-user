@@ -1,4 +1,4 @@
-import { Validate } from 'class-validator';
+import { IsOptional, IsString, Validate } from 'class-validator';
 
 import { CustomPhoneValidator } from '../../../common/decorator/custom-phone-validator-dto';
 
@@ -7,4 +7,11 @@ import { CustomPhoneValidator } from '../../../common/decorator/custom-phone-val
 export class PhoneNumberDto {
   @Validate(CustomPhoneValidator, ['dummy', { message: '' }])
   phoneNumber: string;
+
+  @IsOptional()
+  @IsString()
+  countryCode?: string;
+
+  @IsOptional()
+  userCheck?: boolean;
 }

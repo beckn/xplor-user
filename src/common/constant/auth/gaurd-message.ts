@@ -4,4 +4,6 @@ export const AuthMessages = {
   TokenMissing: 'Token Missing',
   // Message displayed when a token is invalid
   InvalidToken: 'Invalid Token',
+
+  TokenExpired: 'Token Expired',
 };

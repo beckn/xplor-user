@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
@@ -6,14 +6,15 @@ import { Request } from 'express';
 
 import { IS_PUBLIC_KEY } from '../../../common/decorator/public.decorator';
 import { AuthMessages } from '../../../common/constant/auth/gaurd-message';
+import { NetworkAuthorizationException } from '../../../common/exception/network-autherization';
 
 // This guard is responsible for protecting routes by ensuring that only authenticated users can access them.
 @Injectable()
 export class AuthGuard implements CanActivate {
-  private jwtSecret: string;
+  private accessTokenSecret: string;
 
   constructor(private jwtService: JwtService, configService: ConfigService, private reflector: Reflector) {
-    this.jwtSecret = configService.get('jwtSecret');
+    this.accessTokenSecret = configService.get('accessTokenSecret');
   }
 
   // Determines whether a request can be activated based on the presence of a valid JWT token.
@@ -30,18 +31,18 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
-      throw new UnauthorizedException(AuthMessages.TokenMissing);
+      throw new BadRequestException(AuthMessages.TokenMissing);
     }
 
     try {
       // Verifies the JWT token and extracts the payload.
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.jwtSecret,
+        secret: this.accessTokenSecret,
       });
       // Attaches the payload to the request object for use in route handlers.
       request['user'] = payload;
     } catch {
-      throw new UnauthorizedException(AuthMessages.InvalidToken);
+      throw new NetworkAuthorizationException(AuthMessages.TokenExpired);
     }
 
     return true;

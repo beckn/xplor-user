@@ -5,6 +5,7 @@ import { User } from './schemas';
 import { Model } from 'mongoose';
 import { faker } from '@faker-js/faker';
 import { v4 as uuidv4 } from 'uuid';
+import { ConfigModule } from '@nestjs/config';
 
 import { MockKycResponse, NewUser } from '../../common/mocked/stubs/user.stub';
 
@@ -20,6 +21,7 @@ describe('UserService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [ConfigModule.forRoot()],
       providers: [
         UserService,
         {

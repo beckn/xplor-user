@@ -28,8 +28,8 @@ export class CustomValidationPipe implements PipeTransform<any> {
   }
 
   private formatErrors(errors: any[]) {
-    const formattedErrors = errors.reduce((acc, err) => {
-      const firstConstraintKey = Object.keys(err.constraints)[0];
+    const formattedErrors = errors?.reduce((acc, err) => {
+      const firstConstraintKey = Object?.keys(err.constraints)[0];
       return err.constraints[firstConstraintKey];
     }, {});
     return { message: formattedErrors, statusCode: HttpStatus.BAD_REQUEST };

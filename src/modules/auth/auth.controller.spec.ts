@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { PhoneNumberDto, VerifyOtpDto, ResendOtpDto } from './dto';
+import { PhoneNumberDto, VerifyOtpDto, QueryOtpTypeDto } from './dto';
 import { CreateMPinDto } from './dto/create-mpin.dto';
 import { HttpResponseMessage } from '../../common/enums/HttpResponseMessage';
 import { MockMpin, MpinFormat, MpinRequired, UserErrorMessage } from '../../common/constant/auth/mpin-message';
@@ -23,6 +23,7 @@ describe('AuthController', () => {
       resendOtp: jest.fn(),
       createMPin: jest.fn(),
       verifyMPin: jest.fn(),
+      sendMpinOtp: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -53,24 +54,22 @@ describe('AuthController', () => {
       expect(authService.sendOtp).toHaveBeenCalledWith(dto);
     });
   });
-
+  describe('sendMpinOtp', () => {
+    // Test case to verify that the sendOtp method of the AuthController calls the corresponding method of the AuthService with the expected parameters.
+    it('should call authService.sendMpinOtp with expected params', async () => {
+      const userId = `user_${faker.string.uuid()}`;
+      await authController.sendMpinOtp(userId);
+      expect(authService.sendMpinOtp).toHaveBeenCalledWith(userId);
+    });
+  });
   // Test suite for the verifyOtp functionality in the AuthController.
   describe('verifyOtp', () => {
     // Test case to verify that the verifyOtp method of the AuthController calls the corresponding method of the AuthService with the expected parameters.
     it('should call authService.verifyOtp with expected params', async () => {
       const dto = new VerifyOtpDto();
-      await authController.verifyOtp(dto);
-      expect(authService.verifyOtp).toHaveBeenCalledWith(dto);
-    });
-  });
-
-  // Test suite for the resendOtp functionality in the AuthController.
-  describe('resendOtp', () => {
-    // Test case to verify that the resendOtp method of the AuthController calls the corresponding method of the AuthService with the expected parameters.
-    it('should call authService.resendOtp with expected params', async () => {
-      const dto = new ResendOtpDto();
-      await authController.resendOtp(dto);
-      expect(authService.resendOtp).toHaveBeenCalledWith(dto);
+      const query = new QueryOtpTypeDto();
+      await authController.verifyOtp(query, dto);
+      expect(authService.verifyOtp).toHaveBeenCalledWith(query, dto);
     });
   });
 

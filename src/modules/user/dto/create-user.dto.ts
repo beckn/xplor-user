@@ -1,7 +1,7 @@
 // src/user/dto/create-user.dto.ts
 
 // Importing necessary decorators from class-validator and class-transformer
-import { IsBoolean, IsOptional, IsString, Validate, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString, Validate, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 import { CustomPhoneValidator } from '../../../common/decorator/custom-phone-validator-dto';
@@ -38,4 +38,28 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   mPin: string;
+
+  @IsOptional()
+  @IsString()
+  languagePreference: string;
+
+  @IsOptional()
+  @IsArray()
+  domains: string[];
+
+  @IsOptional()
+  @IsArray()
+  categories: string[];
+
+  @IsOptional()
+  @IsString()
+  accessTokenExpiry: string;
+
+  @IsOptional()
+  @IsString()
+  refreshToken: string;
+
+  @IsOptional()
+  @IsString()
+  refreshTokenExpiry: string;
 }
