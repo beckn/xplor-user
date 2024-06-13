@@ -30,6 +30,10 @@ export const ErrorUserMessage = {
   userWithPhoneNumberAlreadyExists: 'User with this phone number already exists',
 };
 
+export const LanguagePreferenceMessage = {
+  notFound: 'Language preference not found with the deviceId',
+};
+
 // Define general error messages related to various validation requirements.
 // These messages are used to inform the user about the outcome of their input,
 // such as when a roleId field is empty or invalid, or when the gender input does not contain only letters.

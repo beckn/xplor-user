@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 import { VerifyOtpValidationMessages } from '../../../common/constant/auth/verify-otp-message';
 
@@ -15,4 +15,12 @@ export class VerifyOtpDto {
   @MinLength(6, { message: VerifyOtpValidationMessages.OtpLength })
   @MaxLength(6, { message: VerifyOtpValidationMessages.OtpLength })
   otp: string;
+
+  @IsOptional()
+  @IsString()
+  deviceId?: string;
+
+  @IsOptional()
+  @IsString()
+  countryCode?: string;
 }

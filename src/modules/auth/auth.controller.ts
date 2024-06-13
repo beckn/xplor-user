@@ -1,11 +1,11 @@
-import { Controller, Post, Body, Put, Get } from '@nestjs/common';
+import { Controller, Post, Body, Put, Get, Query } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
-import { PhoneNumberDto, VerifyOtpDto } from './dto';
+import { PhoneNumberDto, QueryOtpTypeDto, ResetMpinDto, VerifyOtpDto } from './dto';
 import { Public } from '../../common/decorator/public.decorator';
-import { ResendOtpDto } from './dto/resend-otp.dto';
-import { ExtractUserId } from '../../common/decorator/extract-userId';
+import { ExtractUserId, ExtractUserIdFromToken } from '../../common/decorator/extract-userId';
 import { CreateMPinDto } from './dto/create-mpin.dto';
+import { ExtractToken } from '../../common/decorator/extract-token.decorator';
 
 // This controller handles authentication-related operations such as sending OTPs, verifying OTPs, and resending OTPs.
 
@@ -33,6 +33,11 @@ export class AuthController {
     return this.authService.sendOtp(createAuthDto);
   }
 
+  @Put('send-mpin-otp')
+  sendMpinOtp(@ExtractUserId() userId: string) {
+    return this.authService.sendMpinOtp(userId);
+  }
+
   /**
    * Endpoint to verify an OTP entered by the user.
    *
@@ -46,30 +51,10 @@ export class AuthController {
    */
   @Public()
   @Post('verify-otp')
-  verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
-    return this.authService.verifyOtp(verifyOtpDto);
+  verifyOtp(@Query() otpType: QueryOtpTypeDto, @Body() verifyOtpDto: VerifyOtpDto) {
+    return this.authService.verifyOtp(otpType, verifyOtpDto);
   }
 
-  /**
-   * Endpoint to resend an OTP to the user.
-   *
-   * This method allows a user to request a new OTP to be sent to their phone number. It accepts the phone
-   * number as input, which is provided in the request body through the `ResendOtpDto`. The method then
-   * calls the `resendOtp` method in the `AuthService` to handle the OTP resending logic. This could involve
-   * generating a new OTP, updating the stored OTP (e.g., in Redis), and sending it to the provided phone
-   * number via SMS.
-   *
-   * @param resendOtpDto - An object containing the phone number to which the OTP should be resent.
-   * This is passed in the request body and validated against the `ResendOtpDto` rules.
-   *
-   * @returns The result of the `resendOtp` method in the `AuthService`, which typically includes a success
-   * message indicating that the OTP has been resent successfully.
-   */
-  @Public()
-  @Post('resend-otp')
-  resendOtp(@Body() resendOtpDto: ResendOtpDto) {
-    return this.authService.resendOtp(resendOtpDto);
-  }
   /**
    * Endpoint for creating a Master PIN (MPIN) for a user.
    *
@@ -85,6 +70,11 @@ export class AuthController {
   @Post('create-mpin')
   createMPin(@ExtractUserId() userId: string, @Body() mPin: CreateMPinDto) {
     return this.authService.createMPin(mPin, userId);
+  }
+
+  @Put('reset-mpin')
+  resetMpin(@ExtractUserId() userId: string, @Body() resetMpinDto: ResetMpinDto) {
+    return this.authService.resetMpin(resetMpinDto, userId);
   }
 
   /**
@@ -116,8 +106,20 @@ export class AuthController {
    * Note: The token is already being verified if it passes the check. If the verification is successful, we simply return true.
    */
   @Get('verify-token')
-  verifOtp() {
+  verifyToken() {
     // Token is already getting verified if it passes the check, we simply return true.
     return true;
+  }
+
+  @Public()
+  @Get('refresh-token')
+  getAccessToken(@ExtractUserIdFromToken() userId: string, @ExtractToken() token: string) {
+    // Token is already getting verified if it passes the check, we simply return true.
+    return this.authService.getAccessToken(userId, token);
+  }
+
+  @Put('logout')
+  logOut(@ExtractUserId() userId: string) {
+    return this.authService.logout(userId);
   }
 }

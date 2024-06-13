@@ -118,9 +118,9 @@ describe('UserController', () => {
         verified: true,
       };
 
-      jest.spyOn(userService, 'findOne').mockResolvedValue(mockUser as User);
+      jest.spyOn(userService, 'findOneUser').mockResolvedValue(mockUser as User);
 
-      expect(await controller.findOne(userId)).toEqual(mockUser);
+      expect(await controller.findOneUser(userId)).toEqual(mockUser);
     });
     it('should find a user with wrong id', async () => {
       const userId = `user_${uuidv4()}`;
@@ -130,9 +130,9 @@ describe('UserController', () => {
         statusCode: 404,
       };
 
-      jest.spyOn(userService, 'findOne').mockResolvedValue(mockUser);
+      jest.spyOn(userService, 'findOneUser').mockResolvedValue(mockUser);
 
-      expect(await controller.findOne(userId)).toEqual(mockUser);
+      expect(await controller.findOneUser(userId)).toEqual(mockUser);
     });
   });
 
@@ -144,6 +144,7 @@ describe('UserController', () => {
         lastName: faker.person.lastName(),
         firstName: faker.person.firstName(),
         address: faker.location.streetAddress(),
+        dob: faker.string.alpha(),
         email: faker.internet.email(),
         gender: faker.person.gender(), // Randomly select 'Male' or 'Female' gender
         provider: {
@@ -165,6 +166,7 @@ describe('UserController', () => {
         firstName: faker.person.firstName(),
         address: faker.location.streetAddress(),
         email: '',
+        dob: faker.string.alpha(),
         gender: faker.person.gender(), // Randomly select 'Male' or 'Female' gender
         provider: {
           id: faker.string.uuid(),
@@ -194,7 +196,7 @@ describe('UserController', () => {
           id: faker.string.uuid(),
           name: faker.person.fullName(),
         },
-        dob: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }).toString(),
+        dob: faker.string.alpha(),
         walletId: faker.string.uuid(),
         _id: `role_${faker.string.uuid()}`, // Generate a random UUID
       };
@@ -212,6 +214,7 @@ describe('UserController', () => {
         lastName: faker.person.lastName(),
         firstName: faker.person.firstName(),
         address: faker.location.streetAddress(),
+        dob: faker.string.alpha(),
         email: faker.internet.email(),
         dob: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }).toString(),
         gender: faker.number.int().toString(), // Randomly select 'Male' or 'Female' gender

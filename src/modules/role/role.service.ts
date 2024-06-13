@@ -18,7 +18,7 @@ export class RoleService implements OnModuleInit {
 
   // Injects the Role model from Mongoose.
   constructor(@InjectModel('Role') private readonly roleModel: Model<Role>) {
-    this.logger = Logger;
+    this.logger = new Logger(RoleService.name);
   }
 
   // Method called when the module is initialized.
@@ -37,6 +37,7 @@ export class RoleService implements OnModuleInit {
         return;
       }
     } catch (error) {
+      this.logger.error(error);
       // Throw error if initialization fails.
       throw new Error(error);
     }

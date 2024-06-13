@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Attribute, AttributeSchema } from './attribute.schema';
 
 // Defining the Persona entity class, which represents a persona in the system.
-@Schema()
+@Schema({ timestamps: true })
 export class Persona extends Document {
   @Prop({ default: () => `pers_${uuidv4()}` })
   _id: string;
@@ -17,11 +17,11 @@ export class Persona extends Document {
   @Prop({ type: [{ type: AttributeSchema }], default: [] })
   interest: Attribute[];
 
-  @Prop({ type: Date, default: Date.now })
-  updated_at: Date;
+  @Prop({ type: [{ type: String }], default: [] })
+  domains: string[];
 
-  @Prop({ type: Date, default: Date.now })
-  created_at: Date;
+  @Prop({ type: [{ type: String }], default: [] })
+  categories: string[];
 }
 
 // Factory function to create a Mongoose schema based on the Persona class

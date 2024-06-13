@@ -119,7 +119,7 @@ describe('RoleService', () => {
       try {
         await service.findOne(roleId);
       } catch (error) {
-        expect(error.message).toBe(ErrorMessage.NotFound);
+        expect(error.message).toBe(ErrorMessage.UserNotFound);
       }
     });
   });

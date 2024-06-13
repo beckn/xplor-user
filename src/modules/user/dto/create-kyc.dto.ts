@@ -9,7 +9,7 @@ import { ProviderDto } from './create-provider.dto';
 
 // DTO for creating a new KYC record, which includes various personal and provider details
 export class CreateKycDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   lastName: string;
 
@@ -17,11 +17,15 @@ export class CreateKycDto {
   @IsString()
   firstName: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   address: string;
 
-  @IsNotEmpty()
+  @IsOptional()
+  @IsString()
+  dob: string;
+
+  @IsOptional()
   @IsString()
   email: string;
 
