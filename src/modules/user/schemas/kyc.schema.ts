@@ -30,9 +30,6 @@ export class Kyc extends Document {
   dob: string;
 
   @Prop({ required: true })
-  dob: string;
-
-  @Prop({ required: true })
   gender: string;
 
   @Prop({ type: Object, required: true })
